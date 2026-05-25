@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: supplyflow-db
+    environment:
+      POSTGRES_DB: supplyflow
+      POSTGRES_USER: supplyflow
+      POSTGRES_PASSWORD: supplyflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - supplyflow_pgdata:/var/lib/postgresql/data
+
+volumes:
+  supplyflow_pgdata:

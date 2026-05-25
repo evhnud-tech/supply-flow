@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}SupplyFlow - Покупатели{% endblock %}
+
+{% block content %}
+{% if can_manage %}
+<section class="panel">
+  <h2>Добавить покупателя</h2>
+  <form class="form-grid" method="post" action="/sellers">
+    <label>Имя <input required name="full_name" type="text"></label>
+    <label>Адрес <input required name="address" type="text"></label>
+    <button type="submit" class="btn btn-primary" data-loading-text="Сохранение...">Сохранить</button>
+  </form>
+</section>
+{% else %}
+<div class="permission-restricted">
+  ⛔ Только менеджеры могут добавлять покупателей
+</div>
+{% endif %}
+
+<section class="panel">
+  <h2>Покупатели и доступный ассортимент</h2>
+  <div class="cards-grid">
+    {% for row in seller_rows %}
+      <article class="seller-card">
+        <h3>{{ row.seller.full_name }}</h3>
+        <p class="muted">{{ row.seller.address }}</p>
+        {% if row.flowers %}
+          {% for flower in row.flowers %}
+            <span class="chip">{{ flower.name }}</span>
+          {% endfor %}
+        {% else %}
+          <p class="muted">Нет связанных товаров.</p>
+        {% endif %}
+      </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

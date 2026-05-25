@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}SupplyFlow - Главная{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div>
+    <p class="eyebrow">Платформа управления доставками</p>
+    <h1>Отслеживайте доставки, маршруты и логистические задачи в одном месте</h1>
+    <p class="muted">Управляйте поставками от производителя к покупателю, отслеживайте статусы маршрутов и контролируйте выполнение задач.</p>
+  </div>
+  <div class="stats-grid">
+    <article class="stat-card">
+      <span>Позиций в каталоге</span>
+      <strong>{{ stats.flowers }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Маршрутов доставки</span>
+      <strong>{{ stats.routes }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>В пути сейчас</span>
+      <strong>{{ stats.in_transit }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Доставлено</span>
+      <strong>{{ stats.delivered }}</strong>
+    </article>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Покупатели с наибольшей нагрузкой маршрутов</h2>
+  {% if top_sellers %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Покупатель</th>
+          <th>Адрес</th>
+          <th>Маршруты</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for row in top_sellers %}
+        <tr>
+          <td>{{ row.seller.full_name }}</td>
+          <td>{{ row.seller.address }}</td>
+          <td>{{ row.route_count }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="muted">Нет данных.</p>
+  {% endif %}
+</section>
+{% endblock %}

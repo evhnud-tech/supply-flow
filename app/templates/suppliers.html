@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}SupplyFlow - Поставщики{% endblock %}
+
+{% block content %}
+<section>
+  {% if can_manage %}
+  <section class="panel">
+    <h2>Добавить поставщика</h2>
+    <form class="form-grid form-grid--stack" method="post" action="/suppliers">
+      <label>Компания <input required name="full_name" type="text"></label>
+      <label>Тип фермы <input required name="farm_type" type="text" placeholder="Теплица"></label>
+      <label>Адрес <input required name="address" type="text"></label>
+      <button type="submit" class="btn btn-primary">Сохранить</button>
+    </form>
+  </section>
+  {% else %}
+    <div class="permission-restricted panel">
+      ⛔ Только менеджеры могут добавлять поставщиков
+    </div>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Поставщики и товары</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Поставщик</th>
+          <th>Тип фермы</th>
+          <th>Адрес</th>
+          <th>Товары</th>
+          <th>Общая стоимость</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for row in supplier_rows %}
+        <tr>
+          <td>{{ row.supplier.full_name }}</td>
+          <td>{{ row.supplier.farm_type }}</td>
+          <td>{{ row.supplier.address }}</td>
+          <td>
+            {% if row.flowers %}
+              {% for flower in row.flowers %}
+                <span class="chip">{{ flower.name }}</span>
+              {% endfor %}
+            {% else %}
+              <span class="muted">Нет товаров</span>
+            {% endif %}
+          </td>
+          <td>₽{{ '%.2f'|format(row.total_value) }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

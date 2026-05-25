@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}SupplyFlow - Аналитика{% endblock %}
+
+{% block content %}
+<section class="page-stack">
+  <section class="panel {% if not can_compare_suppliers %}panel--full-span{% endif %}">
+    <h2>Фильтр задач логистики</h2>
+    <form class="form-grid form-grid--stack" method="get" action="/analytics">
+      <label>Статус задачи
+        <select name="task_status">
+          <option value="">Любой</option>
+          {% for status in statuses %}
+          <option value="{{ status }}" {% if form.task_status == status %}selected{% endif %}>{{ task_status_labels[status] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Приоритет
+        <select name="priority">
+          <option value="">Любой</option>
+          {% for item in priorities %}
+          <option value="{{ item }}" {% if form.priority == item %}selected{% endif %}>{{ task_priority_labels[item] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button type="submit" class="btn btn-primary">Применить фильтры</button>
+    </form>
+
+    <h2>Создать задачу</h2>
+      {% if can_create_task %}
+      <form class="form-grid form-grid--stack" method="post" action="/analytics/tasks">
+        <label>Маршрут
+          <select name="route_id" required>
+            {% for route in routes %}
+            <option value="{{ route.id }}">Маршрут #{{ route.id }} ({{ route_status_labels[route.status] }})</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Исполнитель
+          <input name="assignee" type="text" required>
+        </label>
+        <label>Срок выполнения
+          <input name="due_date" type="date" required>
+        </label>
+        <label>Приоритет
+          <select name="priority" required>
+            {% for item in priorities %}
+            <option value="{{ item }}">{{ task_priority_labels[item] }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label style="grid-column: 1 / -1;">Описание задачи
+          <input name="title" type="text" required>
+        </label>
+        <button type="submit" class="btn btn-primary" data-loading-text="Создание...">Создать задачу</button>
+      </form>
+      {% else %}
+        <p class="muted">Создание задач доступно только менеджеру и поставщику.</p>
+      {% endif %}
+  </section>
+
+    {% if can_compare_suppliers %}
+  <section class="panel">
+    <h2>Общие поставщики для двух покупателей</h2>
+      <form class="form-grid form-grid--stack" method="get" action="/analytics">
+      <label>Покупатель A
+        <select name="seller_a_id" required>
+          <option value="">Выберите покупателя</option>
+          {% for seller in sellers %}
+          <option value="{{ seller.id }}" {% if seller_a_id == seller.id %}selected{% endif %}>{{ seller.full_name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Покупатель B
+        <select name="seller_b_id" required>
+          <option value="">Выберите покупателя</option>
+          {% for seller in sellers %}
+          <option value="{{ seller.id }}" {% if seller_b_id == seller.id %}selected{% endif %}>{{ seller.full_name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button type="submit" class="btn btn-primary">Найти общих поставщиков</button>
+    </form>
+
+    {% if common_suppliers %}
+      <div class="list-block">
+        {% for supplier in common_suppliers %}
+          <div class="list-item">
+            <strong>{{ supplier.full_name }}</strong>
+            <span class="muted">{{ supplier.address }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% elif seller_a_id and seller_b_id %}
+      <p class="muted">Общих поставщиков не найдено для выбранных покупателей.</p>
+    {% endif %}
+  </section>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Доска задач</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Задача</th>
+          <th>Маршрут</th>
+          <th>Исполнитель</th>
+          <th>Срок</th>
+          <th>Приоритет</th>
+          <th>Статус</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in task_rows %}
+        <tr>
+          <td>{{ row.task.title }}</td>
+          <td>#{{ row.route.id }}: {{ row.supplier.full_name }} → {{ row.seller.full_name }}</td>
+          <td>{{ row.task.assignee }}</td>
+          <td>{{ format_date_ru(row.task.due_date) }}</td>
+          <td><span class="status status-{{ row.task.priority }}">{{ task_priority_labels[row.task.priority] }}</span></td>
+          <td><span class="status status-{{ row.task.status }}">{{ task_status_labels[row.task.status] }}</span></td>
+          <td>
+            <form method="post" action="/analytics/tasks/{{ row.task.id }}/status" class="status-form">
+              <select name="status">
+                {% for item in statuses %}
+                <option value="{{ item }}" {% if row.task.status == item %}selected{% endif %}>{{ task_status_labels[item] }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn btn-small btn-secondary" type="submit" data-loading-text="Обновление...">Обновить</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="muted">Логистические задачи не найдены.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Отчет по завершённым доставкам</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Маршрут</th>
+          <th>Поставщик</th>
+          <th>Покупатель</th>
+          <th>Товар</th>
+          <th>Кол-во</th>
+          <th>Задач выполнено</th>
+          <th>Прогресс</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in report_rows %}
+        <tr>
+          <td>#{{ row.route.id }}</td>
+          <td>{{ row.supplier.full_name }}</td>
+          <td>{{ row.seller.full_name }}</td>
+          <td>{{ row.flower.name }}</td>
+          <td>{{ row.route.quantity }}</td>
+          <td>{{ row.task_done }} / {{ row.task_total }}</td>
+          <td>{{ row.task_completion }}%</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="muted">Завершённые доставки отсутствуют.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

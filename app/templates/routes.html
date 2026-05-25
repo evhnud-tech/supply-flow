@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}SupplyFlow - Маршруты{% endblock %}
+
+{% block content %}
+<section class="page-stack routes-layout">
+  <section class="panel {% if not can_create %}panel--full-span{% endif %}">
+    <h2>Фильтр маршрутов</h2>
+    <form class="form-grid form-grid--stack" method="get" action="/routes">
+      <label>Статус
+        <select name="status">
+          <option value="">Любой</option>
+          {% for item in statuses %}
+          <option value="{{ item }}" {% if form.status == item %}selected{% endif %}>{{ route_status_labels[item] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Поставщик
+        <select name="supplier_id">
+          <option value="">Любой</option>
+          {% for supplier in suppliers %}
+          <option value="{{ supplier.id }}" {% if form.supplier_id == supplier.id %}selected{% endif %}>{{ supplier.full_name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Покупатель
+        <select name="seller_id">
+          <option value="">Любой</option>
+          {% for seller in sellers %}
+          <option value="{{ seller.id }}" {% if form.seller_id == seller.id %}selected{% endif %}>{{ seller.full_name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button type="submit" class="btn btn-primary">Применить фильтры</button>
+    </form>
+  </section>
+
+  {% if can_create %}
+  <section class="panel">
+    <h2>Создать маршрут доставки</h2>
+    <form class="form-grid form-grid--stack" method="post" action="/routes">
+        {% if supplier_scope %}
+        <label>Поставщик
+          <input type="hidden" name="supplier_id" value="{{ supplier_scope }}">
+          <input type="text" value="{{ suppliers[0].full_name }}" disabled>
+        </label>
+        {% else %}
+        <label>Поставщик
+          <select required name="supplier_id">
+            {% for supplier in suppliers %}
+            <option value="{{ supplier.id }}">{{ supplier.full_name }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        {% endif %}
+      <label>Товар
+        <select required name="flower_id">
+          {% for flower in flowers %}
+          <option value="{{ flower.id }}">{{ flower.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Количество
+        <input required name="quantity" type="number" min="1" step="1">
+      </label>
+      <label>Транспорт
+        <input required name="transport_type" type="text" placeholder="Грузовик">
+      </label>
+      <label>Плановая дата
+        <input required name="planned_date" type="date">
+      </label>
+      <label>Расстояние (км)
+        <input required name="distance_km" type="number" min="1" step="0.1">
+      </label>
+      <button type="submit" class="btn btn-primary" data-loading-text="Создание маршрута...">Создать маршрут</button>
+    </form>
+  </section>
+  {% else %}
+    <div class="permission-restricted panel--full-span">
+      ⛔ Только менеджеры и поставщики могут создавать маршруты
+    </div>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Маршруты доставки</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Поставщик</th>
+          <th>Покупатель</th>
+          <th>Товар</th>
+          <th>Кол-во</th>
+          <th>Транспорт</th>
+          <th>Дата</th>
+          <th>Расстояние</th>
+          <th>Стоимость</th>
+          <th>Статус</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in route_rows %}
+        <tr>
+          <td>#{{ row.route.id }}</td>
+          <td>{{ row.supplier.full_name }}</td>
+          <td>{{ row.seller.full_name }}</td>
+          <td>{{ row.flower.name }}</td>
+          <td>{{ row.route.quantity }}</td>
+          <td>{{ row.route.transport_type }}</td>
+          <td>{{ format_date_ru(row.route.planned_date) }}</td>
+          <td>{{ '%.1f'|format(row.route.distance_km) }} км</td>
+          <td>₽{{ '%.2f'|format(row.cargo_value) }}</td>
+          <td><span class="status status-{{ row.route.status }}">{{ route_status_labels[row.route.status] }}</span></td>
+          <td>
+            <form method="post" action="/routes/{{ row.route.id }}/status" class="status-form">
+              <select name="status">
+                {% for item in statuses %}
+                <option value="{{ item }}" {% if row.route.status == item %}selected{% endif %}>{{ route_status_labels[item] }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn btn-small btn-secondary" type="submit" data-loading-text="Обновление...">Обновить</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="11" class="muted">Маршруты не найдены.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

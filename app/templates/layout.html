@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}SupplyFlow - Макет интерфейса{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <p class="eyebrow">Макет MVP</p>
+  <h1>Карта экранов SupplyFlow для скриншотов в отчёте</h1>
+  <p class="muted">Эта страница кратко показывает основные экраны и блоки данных текущего MVP. Её можно использовать как визуальный макет в разделе отчёта о проектировании интерфейса.</p>
+</section>
+
+<section class="layout-grid">
+  <article class="layout-card">
+    <h3>1. Главная</h3>
+    <p class="muted">Карточки показателей, список лидирующих покупателей, стартовая точка проекта.</p>
+    <div class="layout-tags">
+      <span class="chip">цветов: {{ stats.flowers }}</span>
+      <span class="chip">маршрутов: {{ stats.routes }}</span>
+      <span class="chip">в пути: {{ stats.in_transit }}</span>
+    </div>
+  </article>
+
+  <article class="layout-card">
+    <h3>2. Каталог</h3>
+    <p class="muted">Ассортимент товаров, фильтры, добавление и удаление позиций.</p>
+    <div class="layout-tags">
+      <span class="chip">фильтр по сезону</span>
+      <span class="chip">фильтр по поставщику</span>
+      <span class="chip">добавить товар</span>
+    </div>
+  </article>
+
+  <article class="layout-card">
+    <h3>3. Поставщики и покупатели</h3>
+    <p class="muted">Справочники участников поставок и доступный ассортимент.</p>
+    <div class="layout-tags">
+      <span class="chip">добавить поставщика</span>
+      <span class="chip">добавить покупателя</span>
+      <span class="chip">просмотр ассортимента</span>
+    </div>
+  </article>
+
+  <article class="layout-card">
+    <h3>4. Маршруты</h3>
+    <p class="muted">Планирование доставки, смена статусов, данные по транспорту.</p>
+    <div class="layout-tags">
+      <span class="chip">создан</span>
+      <span class="chip">в пути</span>
+      <span class="chip">доставлен</span>
+    </div>
+  </article>
+
+  <article class="layout-card">
+    <h3>5. Задачи и отчёты</h3>
+    <p class="muted">Доска задач, запрос общих поставщиков, отчёт по завершённым доставкам.</p>
+    <div class="layout-tags">
+      <span class="chip">доска задач</span>
+      <span class="chip">процент выполнения</span>
+      <span class="chip">общие поставщики</span>
+    </div>
+  </article>
+
+  <article class="layout-card layout-flow">
+    <h3>Поток данных MVP</h3>
+    <p>Каталог → Маршруты → Задачи → Отчёты</p>
+    <p class="muted">Поток отражает реализованную трёхслойную архитектуру: шаблоны, сервисная логика, репозиторий в памяти.</p>
+    <div class="layout-actions">
+      <a class="layout-link" href="/">Открыть главную</a>
+      <a class="layout-link" href="/analytics">Открыть отчёты</a>
+    </div>
+  </article>
+</section>
+{% endblock %}

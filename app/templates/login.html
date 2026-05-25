@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SupplyFlow - Вход</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="auth-page">
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
+
+    <div class="auth-shell fade-in">
+        <section class="auth-brand">
+            <div class="auth-badge">
+                <span class="auth-badge-mark">SF</span>
+                <span>SupplyFlow</span>
+            </div>
+            <h1 class="auth-title">Система управления логистикой</h1>
+            <p class="muted">Вход в рабочее пространство для менеджеров, поставщиков и покупателей.</p>
+            <div class="auth-demo">
+                <h3>Демо-учетные данные</h3>
+                <p><strong>Менеджер:</strong> manager / password123</p>
+                <p><strong>Поставщик:</strong> supplier1 / password123</p>
+                <p><strong>Покупатель:</strong> seller1 / password123</p>
+            </div>
+        </section>
+
+        <section class="auth-card">
+            <h2>Вход в систему</h2>
+            <p class="muted">Введите логин и пароль, чтобы продолжить.</p>
+
+            {% if error %}
+                <div class="error-message">{{ error }}</div>
+            {% endif %}
+
+            <form method="POST" class="auth-form">
+                <label for="username">Имя пользователя
+                    <input type="text" id="username" name="username" placeholder="Введите имя пользователя" required autofocus>
+                </label>
+
+                <label for="password">Пароль
+                    <input type="password" id="password" name="password" placeholder="Введите пароль" required>
+                </label>
+
+                <button type="submit" class="btn btn-primary auth-submit">Войти</button>
+            </form>
+        </section>
+    </div>
+</body>
+</html>

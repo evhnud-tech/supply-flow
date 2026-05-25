@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SupplyFlow - Система управления логистикой{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <div class="bg-shape shape-1"></div>
+  <div class="bg-shape shape-2"></div>
+  <header class="site-header">
+    <a class="logo" href="/">
+      <span class="logo-mark">SF</span>
+      <span>SupplyFlow</span>
+    </a>
+    <nav class="main-nav">
+      <a class="{% if active_page == 'home' %}active{% endif %}" href="/">Главная</a>
+      <a class="{% if active_page == 'flowers' %}active{% endif %}" href="/flowers">Каталог</a>
+      {% if not user or user.role == 'manager' %}
+      <a class="{% if active_page == 'suppliers' %}active{% endif %}" href="/suppliers">Поставщики</a>
+      <a class="{% if active_page == 'sellers' %}active{% endif %}" href="/sellers">Покупатели</a>
+      {% endif %}
+      <a class="{% if active_page == 'routes' %}active{% endif %}" href="/routes">Маршруты</a>
+      <a class="{% if active_page == 'analytics' %}active{% endif %}" href="/analytics">Аналитика</a>
+    </nav>
+    {% if user %}
+      <div class="auth-actions">
+        <a href="/logout" class="logout-btn">Выход</a>
+      </div>
+    {% endif %}
+  </header>
+
+  <main class="page container fade-in">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="/static/js/main.js"></script>
+</body>
+</html>

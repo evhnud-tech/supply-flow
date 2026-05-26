@@ -32,15 +32,66 @@
         </select>
       </label>
       <label>Поставщик
-        <select name="supplier_id">
-          <option value="">Любой</option>
-          {% for supplier in suppliers %}
-          <option value="{{ supplier.id }}" {% if form.supplier_id == supplier.id %}selected{% endif %}>{{ supplier.full_name }}</option>
-          {% endfor %}
-        </select>
+        {% if supplier_scope %}
+        <input type="hidden" name="supplier_id" value="{{ supplier_scope }}">
+        <input type="text" value="{{ suppliers[0].full_name }}" disabled>
+        {% else %}
+          <select name="supplier_id">
+            <option value="">Любой</option>
+            {% for supplier in suppliers %}
+            <option value="{{ supplier.id }}" {% if form.supplier_id == supplier.id %}selected{% endif %}>{{ supplier.full_name }}</option>
+            {% endfor %}
+          </select>
+        {% endif %}
       </label>
       <button type="submit" class="btn btn-primary">Применить фильтры</button>
     </form>
+  </section>
+
+  <section class="panel">
+    <h2>Каталог для логистического планирования</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Название</th>
+            <th>Вид</th>
+            <th>Сорт</th>
+            <th>Страна</th>
+            <th>Сезон</th>
+            <th>Помещение</th>
+            <th>Цена</th>
+            <th>Поставщик</th>
+            {% if can_add %}<th></th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for flower in flowers %}
+          <tr>
+            <td>{{ flower.name }}</td>
+            <td>{{ flower.species }}</td>
+            <td>{{ flower.variety }}</td>
+            <td>{{ flower.country }}</td>
+            <td>{{ flower.bloom_season }}</td>
+            <td>{{ flower.room_type }}</td>
+            <td>₽{{ '%.2f'|format(flower.price) }}</td>
+            <td>{{ flower.supplier_id }}</td>
+            {% if can_add %}
+            <td>
+              <form method="post" action="/flowers/{{ flower.id }}/delete" onsubmit="return confirm('Вы действительно хотите удалить этот цветок? Это действие необратимо.');">
+                <button class="btn btn-danger btn-small" type="submit">Удалить</button>
+              </form>
+            </td>
+            {% endif %}
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="{% if can_add %}9{% else %}8{% endif %}" class="muted">Товары не найдены.</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </section>
 
   {% if can_add %}
@@ -55,11 +106,16 @@
       <label>Тип помещения <input required name="room_type" type="text" placeholder="Теплица"></label>
       <label>Цена <input required name="price" type="number" min="0" step="0.01"></label>
       <label>Поставщик
-        <select required name="supplier_id">
-          {% for supplier in suppliers %}
-          <option value="{{ supplier.id }}">{{ supplier.full_name }}</option>
-          {% endfor %}
-        </select>
+        {% if supplier_scope %}
+        <input type="hidden" name="supplier_id" value="{{ supplier_scope }}">
+        <input type="text" value="{{ suppliers[0].full_name }}" disabled>
+        {% else %}
+          <select required name="supplier_id">
+            {% for supplier in suppliers %}
+            <option value="{{ supplier.id }}">{{ supplier.full_name }}</option>
+            {% endfor %}
+          </select>
+        {% endif %}
       </label>
       <button type="submit" class="btn btn-primary" data-loading-text="Сохранение...">Сохранить</button>
     </form>
@@ -72,50 +128,4 @@
   ⛔ Только менеджеры и поставщики могут добавлять товары
 </section>
 {% endif %}
-
-<section class="panel">
-  <h2>Каталог для логистического планирования</h2>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Название</th>
-          <th>Вид</th>
-          <th>Сорт</th>
-          <th>Страна</th>
-          <th>Сезон</th>
-          <th>Помещение</th>
-          <th>Цена</th>
-          <th>Поставщик</th>
-          {% if can_add %}<th></th>{% endif %}
-        </tr>
-      </thead>
-      <tbody>
-      {% for flower in flowers %}
-        <tr>
-          <td>{{ flower.name }}</td>
-          <td>{{ flower.species }}</td>
-          <td>{{ flower.variety }}</td>
-          <td>{{ flower.country }}</td>
-          <td>{{ flower.bloom_season }}</td>
-          <td>{{ flower.room_type }}</td>
-          <td>₽{{ '%.2f'|format(flower.price) }}</td>
-          <td>{{ flower.supplier_id }}</td>
-          {% if can_add %}
-          <td>
-            <form method="post" action="/flowers/{{ flower.id }}/delete">
-              <button class="btn btn-danger btn-small" type="submit">Удалить</button>
-            </form>
-          </td>
-          {% endif %}
-        </tr>
-      {% else %}
-        <tr>
-          <td colspan="{% if can_add %}9{% else %}8{% endif %}" class="muted">Товары не найдены.</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</section>
 {% endblock %}

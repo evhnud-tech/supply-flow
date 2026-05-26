@@ -25,6 +25,7 @@ class InMemoryRepository:
             self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._initialize_database()
         self._seed_if_needed()
+        self._ensure_entity_users()
 
     @property
     def flowers(self) -> list[Flower]:
@@ -357,6 +358,33 @@ class InMemoryRepository:
             self.create_user("seller1", "password123", "Petal Point", "seller", seller_1.id)
             self.create_user("seller2", "password123", "Bloom Basket", "seller", seller_2.id)
 
+    def _ensure_entity_users(self) -> None:
+        existing_users = self.list_users()
+        existing_entity_ids = {user.entity_id for user in existing_users if user.entity_id is not None}
+        existing_usernames = {user.username for user in existing_users}
+
+        for supplier in self.list_suppliers():
+            if supplier.id in existing_entity_ids:
+                continue
+            username = self._default_username("supplier", supplier.id)
+            if username in existing_usernames:
+                continue
+            self.create_user(username, "password123", supplier.full_name, "supplier", supplier.id)
+            existing_usernames.add(username)
+
+        for seller in self.list_sellers():
+            if seller.id in existing_entity_ids:
+                continue
+            username = self._default_username("seller", seller.id)
+            if username in existing_usernames:
+                continue
+            self.create_user(username, "password123", seller.full_name, "seller", seller.id)
+            existing_usernames.add(username)
+
+    @staticmethod
+    def _default_username(prefix: str, entity_id: int) -> str:
+        return f"{prefix}{entity_id}"
+
     @staticmethod
     def _flower_from_row(row: sqlite3.Row) -> Flower:
         return Flower(
@@ -440,9 +468,19 @@ class InMemoryRepository:
         row = self._insert_row("suppliers", ["full_name", "farm_type", "address"], (full_name, farm_type, address))
         return self._supplier_from_row(row)
 
+    def delete_supplier(self, supplier_id: int) -> bool:
+        with self._connect() as connection:
+            connection.execute(self._sql("DELETE FROM users WHERE role = ? AND entity_id = ?"), ("supplier", supplier_id))
+        return self._delete_row("suppliers", "id = ?", (supplier_id,)) > 0
+
     def create_seller(self, full_name: str, address: str) -> Seller:
         row = self._insert_row("sellers", ["full_name", "address"], (full_name, address))
         return self._seller_from_row(row)
+
+    def delete_seller(self, seller_id: int) -> bool:
+        with self._connect() as connection:
+            connection.execute(self._sql("DELETE FROM users WHERE role = ? AND entity_id = ?"), ("seller", seller_id))
+        return self._delete_row("sellers", "id = ?", (seller_id,)) > 0
 
     def create_flower(
         self,
@@ -545,6 +583,9 @@ class InMemoryRepository:
 
     def update_task_status(self, task_id: int, status: str) -> bool:
         return self._update_row("tasks", "status = ?", (status,), "id = ?", (task_id,)) > 0
+
+    def delete_task(self, task_id: int) -> bool:
+        return self._delete_row("tasks", "id = ?", (task_id,)) > 0
 
     def create_user(
         self,

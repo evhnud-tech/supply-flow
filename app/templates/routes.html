@@ -35,6 +35,59 @@
     </form>
   </section>
 
+  <section class="panel">
+    <h2>Маршруты доставки</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Поставщик</th>
+            <th>Покупатель</th>
+            <th>Товар</th>
+            <th>Кол-во</th>
+            <th>Транспорт</th>
+            <th>Дата</th>
+            <th>Расстояние</th>
+            <th>Стоимость</th>
+            <th>Статус</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in route_rows %}
+          <tr>
+            <td>#{{ row.route.id }}</td>
+            <td>{{ row.supplier.full_name }}</td>
+            <td>{{ row.seller.full_name }}</td>
+            <td>{{ row.flower.name }}</td>
+            <td>{{ row.route.quantity }}</td>
+            <td>{{ row.route.transport_type }}</td>
+            <td>{{ format_date_ru(row.route.planned_date) }}</td>
+            <td>{{ '%.1f'|format(row.route.distance_km) }} км</td>
+            <td>₽{{ '%.2f'|format(row.cargo_value) }}</td>
+            <td><span class="status status-{{ row.route.status }}">{{ route_status_labels[row.route.status] }}</span></td>
+            <td>
+              <form method="post" action="/routes/{{ row.route.id }}/status" class="status-form">
+                <select name="status">
+                  {% for item in statuses %}
+                  <option value="{{ item }}" {% if row.route.status == item %}selected{% endif %}>{{ route_status_labels[item] }}</option>
+                  {% endfor %}
+                </select>
+                <button class="btn btn-small btn-secondary" type="submit" data-loading-text="Обновление...">Обновить</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="11" class="muted">Маршруты не найдены.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
   {% if can_create %}
   <section class="panel">
     <h2>Создать маршрут доставки</h2>
@@ -53,6 +106,13 @@
           </select>
         </label>
         {% endif %}
+      <label>Покупатель
+        <select required name="seller_id">
+          {% for seller in sellers %}
+          <option value="{{ seller.id }}">{{ seller.full_name }}</option>
+          {% endfor %}
+        </select>
+      </label>
       <label>Товар
         <select required name="flower_id">
           {% for flower in flowers %}
@@ -80,58 +140,5 @@
       ⛔ Только менеджеры и поставщики могут создавать маршруты
     </div>
   {% endif %}
-</section>
-
-<section class="panel">
-  <h2>Маршруты доставки</h2>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Поставщик</th>
-          <th>Покупатель</th>
-          <th>Товар</th>
-          <th>Кол-во</th>
-          <th>Транспорт</th>
-          <th>Дата</th>
-          <th>Расстояние</th>
-          <th>Стоимость</th>
-          <th>Статус</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in route_rows %}
-        <tr>
-          <td>#{{ row.route.id }}</td>
-          <td>{{ row.supplier.full_name }}</td>
-          <td>{{ row.seller.full_name }}</td>
-          <td>{{ row.flower.name }}</td>
-          <td>{{ row.route.quantity }}</td>
-          <td>{{ row.route.transport_type }}</td>
-          <td>{{ format_date_ru(row.route.planned_date) }}</td>
-          <td>{{ '%.1f'|format(row.route.distance_km) }} км</td>
-          <td>₽{{ '%.2f'|format(row.cargo_value) }}</td>
-          <td><span class="status status-{{ row.route.status }}">{{ route_status_labels[row.route.status] }}</span></td>
-          <td>
-            <form method="post" action="/routes/{{ row.route.id }}/status" class="status-form">
-              <select name="status">
-                {% for item in statuses %}
-                <option value="{{ item }}" {% if row.route.status == item %}selected{% endif %}>{{ route_status_labels[item] }}</option>
-                {% endfor %}
-              </select>
-              <button class="btn btn-small btn-secondary" type="submit" data-loading-text="Обновление...">Обновить</button>
-            </form>
-          </td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="11" class="muted">Маршруты не найдены.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
 </section>
 {% endblock %}

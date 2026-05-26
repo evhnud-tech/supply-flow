@@ -8,6 +8,8 @@
   <h2>Добавить покупателя</h2>
   <form class="form-grid" method="post" action="/sellers">
     <label>Имя <input required name="full_name" type="text"></label>
+    <label>Логин <input required name="username" type="text" autocomplete="username"></label>
+    <label>Пароль <input required name="password" type="password" autocomplete="new-password"></label>
     <label>Адрес <input required name="address" type="text"></label>
     <button type="submit" class="btn btn-primary" data-loading-text="Сохранение...">Сохранить</button>
   </form>
@@ -17,6 +19,47 @@
   ⛔ Только менеджеры могут добавлять покупателей
 </div>
 {% endif %}
+
+<section class="panel">
+  <h2>Поиск покупателей по сорту</h2>
+  <form class="form-grid form-grid--stack" method="get" action="/sellers">
+    <label>Сорт
+      <input name="variety" type="text" value="{{ variety_query }}" placeholder="Например, Сара Бернар">
+    </label>
+    <button type="submit" class="btn btn-primary">Найти покупателей</button>
+  </form>
+
+  {% if variety_query %}
+    <div class="table-wrap" style="margin-top: 16px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Покупатель</th>
+            <th>Адрес</th>
+            <th>Подходящие товары</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in matched_rows %}
+          <tr>
+            <td>{{ row.seller.full_name }}</td>
+            <td>{{ row.seller.address }}</td>
+            <td>
+              {% for flower in row.flowers %}
+                <span class="chip">{{ flower.name }}</span>
+              {% endfor %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3" class="muted">По выбранному сорту покупателей не найдено.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</section>
 
 <section class="panel">
   <h2>Покупатели и доступный ассортимент</h2>
@@ -31,6 +74,11 @@
           {% endfor %}
         {% else %}
           <p class="muted">Нет связанных товаров.</p>
+        {% endif %}
+        {% if can_delete %}
+          <form method="post" action="/sellers/{{ row.seller.id }}/delete">
+            <button class="btn btn-danger btn-small" type="submit">Удалить</button>
+          </form>
         {% endif %}
       </article>
     {% endfor %}

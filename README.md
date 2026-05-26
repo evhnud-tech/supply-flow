@@ -25,6 +25,24 @@ uvicorn app.main:app --reload
 
 Open: http://127.0.0.1:8000
 
+## Screenshots for report
+
+After launching the app, use these pages for report screenshots:
+
+- Login page: `http://127.0.0.1:8000/login`
+- Home dashboard: `http://127.0.0.1:8000/`
+- Flowers catalog and filters: `http://127.0.0.1:8000/flowers`
+- Suppliers: `http://127.0.0.1:8000/suppliers`
+- Sellers and "search sellers by variety": `http://127.0.0.1:8000/sellers`
+- Routes and status updates: `http://127.0.0.1:8000/routes`
+- Analytics, task board, completed deliveries report: `http://127.0.0.1:8000/analytics`
+- Interface layout page: `http://127.0.0.1:8000/layout`
+- Swagger UI (OpenAPI docs): `http://127.0.0.1:8000/docs`
+
+For API screenshot examples in Swagger, use endpoint:
+
+- `GET /api/sellers/by-variety?variety=<value>`
+
 The local SQLite database file is created automatically on first run and seeded with demo data.
 
 ## PostgreSQL / Docker

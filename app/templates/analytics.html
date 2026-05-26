@@ -25,44 +25,99 @@
       </label>
       <button type="submit" class="btn btn-primary">Применить фильтры</button>
     </form>
-
-    <h2>Создать задачу</h2>
-      {% if can_create_task %}
-      <form class="form-grid form-grid--stack" method="post" action="/analytics/tasks">
-        <label>Маршрут
-          <select name="route_id" required>
-            {% for route in routes %}
-            <option value="{{ route.id }}">Маршрут #{{ route.id }} ({{ route_status_labels[route.status] }})</option>
-            {% endfor %}
-          </select>
-        </label>
-        <label>Исполнитель
-          <input name="assignee" type="text" required>
-        </label>
-        <label>Срок выполнения
-          <input name="due_date" type="date" required>
-        </label>
-        <label>Приоритет
-          <select name="priority" required>
-            {% for item in priorities %}
-            <option value="{{ item }}">{{ task_priority_labels[item] }}</option>
-            {% endfor %}
-          </select>
-        </label>
-        <label style="grid-column: 1 / -1;">Описание задачи
-          <input name="title" type="text" required>
-        </label>
-        <button type="submit" class="btn btn-primary" data-loading-text="Создание...">Создать задачу</button>
-      </form>
-      {% else %}
-        <p class="muted">Создание задач доступно только менеджеру и поставщику.</p>
-      {% endif %}
   </section>
 
-    {% if can_compare_suppliers %}
+  <section class="panel">
+    <h2>Доска задач</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Задача</th>
+            <th>Маршрут</th>
+            <th>Исполнитель</th>
+            <th>Срок</th>
+            <th>Приоритет</th>
+            <th>Статус</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in task_rows %}
+          <tr>
+            <td>{{ row.task.title }}</td>
+            <td>#{{ row.route.id }}: {{ row.supplier.full_name }} → {{ row.seller.full_name }}</td>
+            <td>{{ row.task.assignee }}</td>
+            <td>{{ format_date_ru(row.task.due_date) }}</td>
+            <td><span class="status status-{{ row.task.priority }}">{{ task_priority_labels[row.task.priority] }}</span></td>
+            <td><span class="status status-{{ row.task.status }}">{{ task_status_labels[row.task.status] }}</span></td>
+            <td>
+              <div class="status-form-stack">
+                <form method="post" action="/analytics/tasks/{{ row.task.id }}/status" class="status-form">
+                  <select name="status">
+                    {% for item in statuses %}
+                    <option value="{{ item }}" {% if row.task.status == item %}selected{% endif %}>{{ task_status_labels[item] }}</option>
+                    {% endfor %}
+                  </select>
+                  <button class="btn btn-small btn-secondary" type="submit" data-loading-text="Обновление...">Обновить</button>
+                </form>
+                <form method="post" action="/analytics/tasks/{{ row.task.id }}/delete" onsubmit="return confirm('Удалить задачу?');">
+                  <button class="btn btn-small btn-danger" type="submit" data-loading-text="Удаление...">Удалить</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" class="muted">Логистические задачи не найдены.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  {% if can_create_task %}
+  <section class="panel">
+    <h2>Создать задачу</h2>
+    <form class="form-grid form-grid--stack" method="post" action="/analytics/tasks">
+      <label>Маршрут
+        <select name="route_id" required>
+          {% for route in routes %}
+          <option value="{{ route.route.id }}">#{{ route.route.id }}: {{ route.supplier.full_name }} → {{ route.seller.full_name }}, {{ route.flower.name }}, {{ format_date_ru(route.route.planned_date) }}, {{ route_status_labels[route.route.status] }}</option>
+          {% endfor %}
+        </select>
+        <div class="muted">В списке показаны поставщик, покупатель, товар, дата и статус маршрута.</div>
+      </label>
+      <label>Исполнитель
+        <input name="assignee" type="text" required>
+      </label>
+      <label>Срок выполнения
+        <input name="due_date" type="date" required>
+      </label>
+      <label>Приоритет
+        <select name="priority" required>
+          {% for item in priorities %}
+          <option value="{{ item }}">{{ task_priority_labels[item] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label style="grid-column: 1 / -1;">Описание задачи
+        <input name="title" type="text" required>
+      </label>
+      <button type="submit" class="btn btn-primary" data-loading-text="Создание...">Создать задачу</button>
+    </form>
+  </section>
+  {% else %}
+    <section class="panel">
+      <p class="muted">Создание задач доступно только менеджеру и поставщику.</p>
+    </section>
+  {% endif %}
+
+  {% if can_compare_suppliers %}
   <section class="panel">
     <h2>Общие поставщики для двух покупателей</h2>
-      <form class="form-grid form-grid--stack" method="get" action="/analytics">
+    <form class="form-grid form-grid--stack" method="get" action="/analytics">
       <label>Покупатель A
         <select name="seller_a_id" required>
           <option value="">Выберите покупателя</option>
@@ -96,51 +151,6 @@
     {% endif %}
   </section>
   {% endif %}
-</section>
-
-<section class="panel">
-  <h2>Доска задач</h2>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Задача</th>
-          <th>Маршрут</th>
-          <th>Исполнитель</th>
-          <th>Срок</th>
-          <th>Приоритет</th>
-          <th>Статус</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in task_rows %}
-        <tr>
-          <td>{{ row.task.title }}</td>
-          <td>#{{ row.route.id }}: {{ row.supplier.full_name }} → {{ row.seller.full_name }}</td>
-          <td>{{ row.task.assignee }}</td>
-          <td>{{ format_date_ru(row.task.due_date) }}</td>
-          <td><span class="status status-{{ row.task.priority }}">{{ task_priority_labels[row.task.priority] }}</span></td>
-          <td><span class="status status-{{ row.task.status }}">{{ task_status_labels[row.task.status] }}</span></td>
-          <td>
-            <form method="post" action="/analytics/tasks/{{ row.task.id }}/status" class="status-form">
-              <select name="status">
-                {% for item in statuses %}
-                <option value="{{ item }}" {% if row.task.status == item %}selected{% endif %}>{{ task_status_labels[item] }}</option>
-                {% endfor %}
-              </select>
-              <button class="btn btn-small btn-secondary" type="submit" data-loading-text="Обновление...">Обновить</button>
-            </form>
-          </td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="7" class="muted">Логистические задачи не найдены.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
 </section>
 
 <section class="panel">

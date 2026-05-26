@@ -233,3 +233,30 @@ class LogisticsService:
             rows.append({"seller": seller, "route_count": count_by_seller[seller.id]})
 
         return sorted(rows, key=lambda row: row["route_count"], reverse=True)
+
+    def sellers_by_variety(self, variety: str) -> list[dict[str, object]]:
+        query = variety.strip().lower()
+        if not query:
+            return []
+
+        flower_by_id = {flower.id: flower for flower in self.repo.list_flowers()}
+        seller_to_flowers: dict[int, list[Flower]] = defaultdict(list)
+
+        for link in self.repo.seller_flowers:
+            flower = flower_by_id.get(link.flower_id)
+            if flower and flower.variety.lower() == query:
+                seller_to_flowers[link.seller_id].append(flower)
+
+        rows: list[dict[str, object]] = []
+        for seller in self.repo.list_sellers():
+            matched = sorted(seller_to_flowers.get(seller.id, []), key=lambda item: item.name)
+            if not matched:
+                continue
+            rows.append(
+                {
+                    "seller": seller,
+                    "flowers": matched,
+                }
+            )
+
+        return rows

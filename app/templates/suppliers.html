@@ -9,6 +9,8 @@
     <h2>Добавить поставщика</h2>
     <form class="form-grid form-grid--stack" method="post" action="/suppliers">
       <label>Компания <input required name="full_name" type="text"></label>
+      <label>Логин <input required name="username" type="text" autocomplete="username"></label>
+      <label>Пароль <input required name="password" type="password" autocomplete="new-password"></label>
       <label>Тип фермы <input required name="farm_type" type="text" placeholder="Теплица"></label>
       <label>Адрес <input required name="address" type="text"></label>
       <button type="submit" class="btn btn-primary">Сохранить</button>
@@ -32,6 +34,7 @@
           <th>Адрес</th>
           <th>Товары</th>
           <th>Общая стоимость</th>
+          {% if can_delete %}<th></th>{% endif %}
         </tr>
       </thead>
       <tbody>
@@ -50,6 +53,13 @@
             {% endif %}
           </td>
           <td>₽{{ '%.2f'|format(row.total_value) }}</td>
+          {% if can_delete %}
+          <td>
+            <form method="post" action="/suppliers/{{ row.supplier.id }}/delete">
+              <button class="btn btn-danger btn-small" type="submit">Удалить</button>
+            </form>
+          </td>
+          {% endif %}
         </tr>
       {% endfor %}
       </tbody>
